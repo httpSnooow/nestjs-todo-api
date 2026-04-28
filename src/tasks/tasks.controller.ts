@@ -1,23 +1,64 @@
-import { Controller, Get, Post, Body, Put, Patch, Param, Delete, Query, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateTaskStatusDto } from './dto/update-status.dto';
 import { Task } from './entities/task.entity';
+import { TaskPriority } from './enums/task-priority.enum';
 
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Obter estatísticas das tarefas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Estatísticas retornadas com sucesso.',
+    schema: {
+      example: {
+        total: 10,
+        completed: 4,
+        pending: 6,
+        completionRate: '40.0%',
+        byPriority: { high: 2, medium: 5, low: 3 },
+      },
+    },
+  })
+  getStats() {
+    return this.tasksService.getStats();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar todas as tarefas' })
   @ApiQuery({ name: 'completed', required: false, type: Boolean, description: 'Filtrar por status de conclusão' })
+  @ApiQuery({ name: 'priority', required: false, enum: TaskPriority, description: 'Filtrar por prioridade' })
   @ApiResponse({ status: 200, description: 'Lista de tarefas retornada com sucesso.', type: [Task] })
-  findAll(@Query('completed') completed?: string) {
+  findAll(
+    @Query('completed') completed?: string,
+    @Query('priority') priority?: TaskPriority,
+  ) {
     const isCompleted = completed === undefined ? undefined : completed === 'true';
-    return this.tasksService.findAll(isCompleted);
+    return this.tasksService.findAll(isCompleted, priority);
   }
 
   @Get(':id')
@@ -50,6 +91,14 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Tarefa não encontrada.' })
   updateStatus(@Param('id') id: string, @Body() statusDto: UpdateTaskStatusDto) {
     return this.tasksService.updateStatus(id, statusDto.completed);
+  }
+
+  @Patch(':id/toggle')
+  @ApiOperation({ summary: 'Alternar o status de conclusão (toggle)' })
+  @ApiResponse({ status: 200, description: 'Status alternado com sucesso.', type: Task })
+  @ApiResponse({ status: 404, description: 'Tarefa não encontrada.' })
+  toggleStatus(@Param('id') id: string) {
+    return this.tasksService.toggleStatus(id);
   }
 
   @Delete(':id')

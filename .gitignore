@@ -2,3 +2,4 @@
 /dist/**
 /.idea/
 dist
+database.sqlite

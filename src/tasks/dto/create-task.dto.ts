@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, MinLength, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { TaskPriority } from '../enums/task-priority.enum';
 
 export class CreateTaskDto {
   @ApiProperty({ description: 'Título da tarefa', minLength: 3, maxLength: 200 })
@@ -15,4 +16,14 @@ export class CreateTaskDto {
   @MinLength(5)
   @MaxLength(500)
   description?: string;
+
+  @ApiProperty({
+    description: 'Prioridade da tarefa',
+    enum: TaskPriority,
+    default: TaskPriority.MEDIUM,
+    required: false,
+  })
+  @IsEnum(TaskPriority)
+  @IsOptional()
+  priority?: TaskPriority;
 }
