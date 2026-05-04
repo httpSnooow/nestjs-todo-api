@@ -21,6 +21,7 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateTaskStatusDto } from './dto/update-status.dto';
+import { QueryTaskDto } from './dto/query-task.dto';
 import { Task } from './entities/task.entity';
 import { TaskPriority } from './enums/task-priority.enum';
 
@@ -49,16 +50,15 @@ export class TasksController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as tarefas' })
+  @ApiOperation({ summary: 'Listar e buscar tarefas' })
   @ApiQuery({ name: 'completed', required: false, type: Boolean, description: 'Filtrar por status de conclusão' })
   @ApiQuery({ name: 'priority', required: false, enum: TaskPriority, description: 'Filtrar por prioridade' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Buscar por texto no título ou descrição' })
+  @ApiQuery({ name: 'orderBy', required: false, enum: ['title', 'createdAt', 'updatedAt'], description: 'Campo para ordenação' })
+  @ApiQuery({ name: 'order', required: false, enum: ['ASC', 'DESC'], description: 'Direção da ordenação' })
   @ApiResponse({ status: 200, description: 'Lista de tarefas retornada com sucesso.', type: [Task] })
-  findAll(
-    @Query('completed') completed?: string,
-    @Query('priority') priority?: TaskPriority,
-  ) {
-    const isCompleted = completed === undefined ? undefined : completed === 'true';
-    return this.tasksService.findAll(isCompleted, priority);
+  findAll(@Query() queryDto: QueryTaskDto) {
+    return this.tasksService.findAll(queryDto);
   }
 
   @Get(':id')

@@ -5,6 +5,7 @@ import { Task } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskPriority } from './enums/task-priority.enum';
+import { QueryTaskDto } from './dto/query-task.dto';
 
 export interface TaskStats {
   total: number;
@@ -27,7 +28,15 @@ export class TasksService {
     private readonly taskRepository: Repository<Task>,
   ) {}
 
-  async findAll(completed?: boolean, priority?: TaskPriority): Promise<Task[]> {
+  async findAll(queryDto: QueryTaskDto = {}): Promise<Task[]> {
+    const {
+      completed,
+      priority,
+      search,
+      orderBy = 'createdAt',
+      order = 'DESC',
+    } = queryDto;
+
     const query = this.taskRepository.createQueryBuilder('task');
 
     if (completed !== undefined) {
@@ -38,7 +47,14 @@ export class TasksService {
       query.andWhere('task.priority = :priority', { priority });
     }
 
-    query.orderBy('task.createdAt', 'DESC');
+    if (search && search.trim() !== '') {
+      query.andWhere(
+        '(task.title LIKE :search OR task.description LIKE :search)',
+        { search: `%${search.trim()}%` },
+      );
+    }
+
+    query.orderBy(`task.${orderBy}`, order);
 
     return query.getMany();
   }
