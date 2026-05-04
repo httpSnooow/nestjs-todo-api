@@ -6,10 +6,13 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // CORS habilitado (permite acesso do frontend)
+  app.enableCors();
+
   // Configuração do Swagger
   const config = new DocumentBuilder()
     .setTitle('Todo API')
-    .setDescription('API para gerenciamento de tarefas (To-Do List)')
+    .setDescription('API para gerenciamento de tarefas (To-Do List) com suporte a prioridades e estatísticas')
     .setVersion('1.0')
     .addTag('tasks')
     .build();

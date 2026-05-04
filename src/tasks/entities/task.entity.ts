@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { TaskPriority } from '../enums/task-priority.enum';
 
 @Entity('tasks')
 export class Task {
@@ -18,6 +19,15 @@ export class Task {
   @Column({ default: false })
   @ApiProperty({ description: 'Status de conclusão', default: false })
   completed: boolean;
+
+  @Column({ type: 'text', default: TaskPriority.MEDIUM })
+  @ApiProperty({
+    description: 'Prioridade da tarefa',
+    enum: TaskPriority,
+    default: TaskPriority.MEDIUM,
+    example: TaskPriority.MEDIUM,
+  })
+  priority: TaskPriority;
 
   @CreateDateColumn()
   @ApiProperty({ description: 'Data de criação' })
